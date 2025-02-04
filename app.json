@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "bewerbung_andre_beinke",
+    "slug": "snack-beff981c-4d7d-48b0-afab-73c397b8b59c",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "description": "Sehr geehrte Damen und Herren,\n\n ich freue mich, dass wir uns hier über meine Bewerber-App näher kennenlernen – und hoffe sie mit meinem Lebenslauf hier & Arbeitsproben daraus (verlinkt) neugieriger zu machen; vielleicht auf ein erstes Gespräch? Es würde mich freuen! \n\nViele Grüße,\n André Beinke "
+  }
+}
