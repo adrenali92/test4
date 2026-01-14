@@ -1,0 +1,3 @@
+[build]
+  command = "npx expo export -p web --output-dir web-build"
+  publish = "web-build"
