@@ -1,291 +1,231 @@
-import React, { useState, useRef } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
-  Linking, 
-  Image, 
+import React, { useMemo, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
   useWindowDimensions,
-  Platform,
-  Animated,
-  Modal
 } from 'react-native';
 
-// Dynamic Theme Constants
 const getThemeColors = () => {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) { // Morning
+  if (hour >= 5 && hour < 12) {
     return {
-      primary: '#87CEEB', // Light Sky Blue
-      background: '#E6F4F1', // Very Light Cyan
-      text: '#333333',
-      accent: '#4682B4' // Steel Blue
-    };
-  } else if (hour >= 12 && hour < 17) { // Afternoon
-    return {
-      primary: '#F0F8FF', // Light Sea Green
-      background: '#F0F8FF', // Alice Blue
-      text: '#333333',
-      accent: '87CEEB' // Forest Green
-    };
-  } else if (hour >= 17 && hour < 21) { // Evening
-    return {
-      primary: '#4169E1', // Royal Blue
-      background: '#F5F5F5', // White Smoke
-      text: '#333333',
-      accent: '#8A2BE2' // Blue Violet
-    };
-  } else { // Night
-    return {
-      primary: '#191970', // Midnight Blue
-      background: '#2F4F4F', // Dark Slate Gray
-      text: '#E0E0E0',
-      accent: '#00CED1' // Dark Turquoise
+      primary: '#FCE7F3',
+      background: '#FFF7ED',
+      text: '#1F2937',
+      accent: '#F472B6',
     };
   }
+  if (hour >= 12 && hour < 17) {
+    return {
+      primary: '#DBEAFE',
+      background: '#F8FAFC',
+      text: '#0F172A',
+      accent: '#38BDF8',
+    };
+  }
+  if (hour >= 17 && hour < 21) {
+    return {
+      primary: '#0EA5E9',
+      background: '#0F172A',
+      text: '#F8FAFC',
+      accent: '#F97316',
+    };
+  }
+  return {
+    primary: '#111827',
+    background: '#020617',
+    text: '#E2E8F0',
+    accent: '#22D3EE',
+  };
 };
 
-// Reusable Components
-const Section = ({ title, children, style }) => (
-  <View style={[styles.section, style]}>
-    <Text style={styles.sectionTitle}>{title}</Text>
+const Section = ({ title, subtitle, children }) => (
+  <View style={styles.section}>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+    </View>
     {children}
   </View>
 );
 
-const LinkButton = ({ title, url }) => (
+const Pill = ({ label, active, onPress }) => (
   <TouchableOpacity
-    style={styles.button}
-    onPress={() => Linking.openURL(url)}
-    activeOpacity={0.7}
+    style={[styles.pill, active && styles.pillActive]}
+    onPress={onPress}
+    activeOpacity={0.8}
   >
-    <Text style={styles.buttonText}>{title}</Text>
+    <Text style={[styles.pillText, active && styles.pillTextActive]}>{label}</Text>
+  </TouchableOpacity>
+);
+
+const ActionCard = ({ title, description, onPress, cta }) => (
+  <TouchableOpacity style={styles.actionCard} onPress={onPress} activeOpacity={0.85}>
+    <Text style={styles.actionTitle}>{title}</Text>
+    <Text style={styles.actionDescription}>{description}</Text>
+    <Text style={styles.actionCta}>{cta}</Text>
   </TouchableOpacity>
 );
 
 export default function App() {
-  // State Management
-  const [language, setLanguage] = useState('de');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [languageModalVisible, setLanguageModalVisible] = useState(false);
-  const scrollY = useRef(new Animated.Value(0)).current;
-
-  // Translations
-  const translations = {
-    de: {
-      about: 'Über mich',
-      resume: 'Lebenslauf',
-      workSamples: 'Arbeitsproben',
-      certificates: 'Zeugnisse',
-      skills: 'Kenntnisse & Fähigkeiten',
-      languages: 'Sprachen'
-    },
-    en: {
-      about: 'About Me',
-      resume: 'Resume',
-      workSamples: 'Work Samples',
-      certificates: 'Certificates',
-      skills: 'Skills & Competencies',
-      languages: 'Languages'
-    }
-  };
-
-  // Dynamic Styling
+  const [mood, setMood] = useState('Neugierig');
+  const [focus, setFocus] = useState('Mut');
   const theme = getThemeColors();
   const { width } = useWindowDimensions();
   const isTablet = width > 768;
 
-  // Parallax Effect
-  const profileImageTransform = scrollY.interpolate({
-    inputRange: [-100, 0, 100],
-    outputRange: [1.2, 1, 0.8],
-    extrapolate: 'clamp'
-  });
+  const moodPrompts = useMemo(
+    () => ({
+      Neugierig: 'Heute: Stell eine Frage, die dich ehrlich interessiert.',
+      Romantisch: 'Heute: Sag jemandem, was du an ihm/ihr magst.',
+      Abenteuer: 'Heute: Plane ein kleines Risiko mit großem Lächeln.',
+      Ruhig: 'Heute: Wähle Verbindung ohne Druck.',
+    }),
+    []
+  );
 
-  // Social Media & Additional Interactions
-  const openSocialMedia = (platform) => {
-    const urls = {
-      instagram: 'https://instagram.com/andrenalin_now',
-      blog: 'http://neusucht.blog'
-    };
-    Linking.openURL(urls[platform]);
-  };
+  const focusPrompts = useMemo(
+    () => ({
+      Mut: 'Ein kurzer Schritt in Richtung Kontakt ist ein Sieg.',
+      Klarheit: 'Du darfst Grenzen setzen und dich dabei gut fühlen.',
+      Vertrauen: 'Zuhören ist der schnellste Weg zu Nähe.',
+      Energie: 'Kurze Nachrichten, klare Absicht, sanfter Ton.',
+    }),
+    []
+  );
 
   return (
-    <View style={[
-      styles.container, 
-      { 
-        backgroundColor: isDarkMode ? '#121212' : theme.background 
-      }
-    ]}>
-      {/* Language Selection Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={languageModalVisible}
-        onRequestClose={() => setLanguageModalVisible(false)}
-      >
-        <View style={styles.modalView}>
-          <TouchableOpacity 
-            style={styles.languageOption}
-            onPress={() => {
-              setLanguage('de');
-              setLanguageModalVisible(false);
-            }}
-          >
-            <Text>🇩🇪 Deutsch</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.languageOption}
-            onPress={() => {
-              setLanguage('en');
-              setLanguageModalVisible(false);
-            }}
-          >
-            <Text>🇬🇧 English</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      <ScrollView
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      >
-        {/* Toggle Buttons */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity onPress={() => setLanguageModalVisible(true)}>
-            <Text>{language === 'de' ? 'DE' : 'ENG'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsDarkMode(!isDarkMode)}>
-            <Text>{isDarkMode ? '☀️' : '🌙'}</Text>
-          </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={[styles.hero, { backgroundColor: theme.primary }]}> 
+          <Text style={[styles.heroEyebrow, { color: theme.text }]}>KRIMI & KENNLERNEN</Text>
+          <Text style={[styles.heroTitle, { color: theme.text }]}>TrueMatch</Text>
+          <Text style={[styles.heroSubtitle, { color: theme.text }]}
+          >Eine App, die Motivation, Dating und True Crime zu klugen Dates verbindet.</Text>
         </View>
 
-        {/* Header with Parallax */}
-        <Animated.View 
-          style={[
-            styles.header, 
-            { 
-              transform: [{ scale: profileImageTransform }],
-              backgroundColor: isDarkMode ? '#333' : theme.primary 
-            }
-          ]}
-        >
-          <Animated.Image
-            source={{ uri: 'https://i.ibb.co/fVft0ZBc/IMG-3460.jpg' }}
-            style={styles.profileImage}
-            resizeMode="cover"
-          />
-          <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#000' }]}>
-            André Beinke
-          </Text>
-          <Text style={[styles.subtitle, { color: isDarkMode ? '#ddd' : '#333' }]}>
-            {translations[language].about}
-          </Text>
-        </Animated.View>
-
-        {/* Social Media Links */}
-        <View style={styles.socialContainer}>
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => openSocialMedia('instagram')}
-          >
-            <Text>📸 Instagram</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => openSocialMedia('blog')}
-          >
-            <Text>📝 Blog</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Rest of the Original Content */}
         <View style={[styles.mainContent, isTablet && styles.tabletContent]}>
-          {/* About Me Section */}
-          <Section title={translations[language].about}>
-            <View style={styles.contactInfo}>
-              <Text style={styles.contactItem}>Geboren: 20. November 1987</Text>
-              <Text style={styles.contactItem}>Weserstraße 57, 12045 Berlin</Text>
-              <Text 
-                style={styles.contactItemLink}
-                onPress={() => Linking.openURL('mailto:andre.beinke@gmx.de')}
-              >
-                E-Mail: andre.beinke@gmx.de
+          <Section
+            title="Mood-Compass"
+            subtitle="Wähle deine Stimmung und hol dir den passenden Impuls."
+          >
+            <View style={styles.pillRow}>
+              {['Neugierig', 'Romantisch', 'Abenteuer', 'Ruhig'].map((item) => (
+                <Pill
+                  key={item}
+                  label={item}
+                  active={mood === item}
+                  onPress={() => setMood(item)}
+                />
+              ))}
+            </View>
+            <Text style={styles.promptText}>{moodPrompts[mood]}</Text>
+          </Section>
+
+          <Section
+            title="Case des Tages"
+            subtitle="Ein Mini-Fall für Gesprächsstoff und sichere Dates."
+          >
+            <View style={styles.caseCard}>
+              <Text style={styles.caseTitle}>Der verschwundene Café-Gast</Text>
+              <Text style={styles.caseMeta}>📍 Berlin • 🕰️ 7 Minuten</Text>
+              <Text style={styles.caseBody}>
+                Eine Person verlässt ein Café, lässt Tasche und Telefon zurück. Was ist ein
+                plausibler Ablauf ohne True-Crime-Klischees? Findet gemeinsam drei
+                harmlose Erklärungen und eine, die ihr ausschließt.
               </Text>
-              <Text 
-                style={styles.contactItemLink}
-                onPress={() => Linking.openURL('tel:+4915753082479')}
-              >
-                Tel: +49 157 530 824 79
-              </Text>
+              <View style={styles.caseTags}>
+                {['Empathie', 'Logik', 'Gesprächsstart'].map((tag) => (
+                  <View key={tag} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </Section>
 
-          {/* Resume Section */}
-          <Section title={translations[language].resume}>
+          <Section
+            title="Dating-Plan in 3 Schritten"
+            subtitle="Motiviert, achtsam, sicher."
+          >
             {[
-              { date: "Dez. 2023 - heute", description: "Redakteur bei supa.stories GmbH" },
-              { date: "Okt. 2020 - März 2023", description: "Masterstudium Medien und Politische Kommunikation, Freie Universität Berlin" },
-              { date: "März - Dez. 2023", description: "Freier Journalist bei Märkische Allgemeine Zeitung & Berliner Zeitung" },
-              { date: "Sept. 2022 - Feb. 2023", description: "Social Media-Redakteur bei ZDF Digital GmbH" },
-               { date: "März 2021 - Sept. 2022", description: "Redaktioneller Mitarbeiter bei dpa" },
-            { date: "Sept. 2019 - Sept. 2020", description: "Castingredakteur bei Story House Production GmbH" },
-  
-            ].map((experience, index) => (
-              <View key={index} style={styles.experienceItem}>
-                <Text style={styles.experienceDate}>{experience.date}</Text>
-                <Text style={styles.experienceDescription}>{experience.description}</Text>
+              { step: '1', title: 'Check-in', text: 'Frage: "Was brauchst du heute für ein gutes Date?"' },
+              { step: '2', title: 'Story-Spark', text: 'Teile eine kurze True-Crime-Story und hör zu.' },
+              { step: '3', title: 'Exit-Plan', text: 'Gemeinsames Signal für Pausen oder Ende.' },
+            ].map((item) => (
+              <View key={item.step} style={styles.stepRow}>
+                <View style={styles.stepBadge}>
+                  <Text style={styles.stepBadgeText}>{item.step}</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>{item.title}</Text>
+                  <Text style={styles.stepText}>{item.text}</Text>
+                </View>
               </View>
             ))}
           </Section>
 
-            {/* Work Samples */}
-        <Section title="Arbeitsproben">
-          {[
-            { title: "Rassehunde-Ausstellung Bericht", url: "https://www.zeit.de/news/2021-10/16/rostocker-rassehunde-ausstellung-mit-melderekord" },
-            { title: "Olivia Jones Porträt", url: "https://www.t-online.de/unterhaltung/stars/id_91181584/dragqueen-olivia-jones-wuenscht-sich-mehr-sinnfluencer-.html" },
-            { title: "Umwelt Crime: Fischsterben in der Oder", url: "https://www.zdf.de/nachrichten/panorama/oder-fischsterben-fluss-umweltkatastrophe-100.html" }
-          ].map((link, index) => (
-            <LinkButton 
-              key={index} 
-              title={link.title} 
-              url={link.url} 
-            />
-          ))}
-        </Section>
-
-          {/* Skills Section */}
-          <Section title={translations[language].skills}>
-            <View style={styles.skillsContainer}>
-              <Text style={styles.skillTitle}>{translations[language].languages}</Text>
-              {[
-                "Deutsch: Muttersprache",
-                "Englisch: Fließend",
-                "Französisch: Grundkenntnisse",
-                "Arabisch: Grundkenntnisse (مرحبًا!)"
-              ].map((language, index) => (
-                <Text key={index} style={styles.contactItem}>{language}</Text>
+          <Section
+            title="Motivationsfokus"
+            subtitle="Worauf möchtest du dich heute konzentrieren?"
+          >
+            <View style={styles.pillRow}>
+              {['Mut', 'Klarheit', 'Vertrauen', 'Energie'].map((item) => (
+                <Pill
+                  key={item}
+                  label={item}
+                  active={focus === item}
+                  onPress={() => setFocus(item)}
+                />
               ))}
             </View>
+            <Text style={styles.promptText}>{focusPrompts[focus]}</Text>
           </Section>
-           {/* Certificates */}
-        <Section title="Zeugnisse">
-          <LinkButton
-            title="Download (PDF)"
-            url="https://drive.google.com/file/d/19tSJ4LejAU3hpPsC4kZxE0KN3xW7NqwI/view?usp=sharing"
-          />
-        </Section>
-        </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 André Beinke</Text>
+          <Section
+            title="Smart Safety"
+            subtitle="Kleine Checkliste für sichere Dates."
+          >
+            {[
+              'Trefft euch zuerst an einem öffentlichen Ort.',
+              'Teile live deinen Standort mit einer Vertrauensperson.',
+              'Behalte dein Getränk immer im Blick.',
+              'Sag klar Nein, wenn etwas nicht passt.',
+            ].map((item) => (
+              <View key={item} style={styles.checkRow}>
+                <Text style={styles.checkIcon}>✅</Text>
+                <Text style={styles.checkText}>{item}</Text>
+              </View>
+            ))}
+          </Section>
+
+          <Section
+            title="Quick Actions"
+            subtitle="Drei Klicks, die euch näherbringen."
+          >
+            <ActionCard
+              title="Date-Idee: Cold Case Walk"
+              description="Spaziergang + Mini-Storytelling. Jede:r erzählt eine hypothetische Spur." 
+              cta="Idee speichern"
+              onPress={() => Linking.openURL('https://www.meetup.com/')}
+            />
+            <ActionCard
+              title="Audio-Impuls: 2-Minuten-Mut"
+              description="Kurzer Motivationsboost vor dem Date."
+              cta="Jetzt anhören"
+              onPress={() => Linking.openURL('https://open.spotify.com')}
+            />
+            <ActionCard
+              title="Chat-Vorlage"
+              description="Hey! Lust auf einen Krimi-Café-Check? 30 Minuten, safe & entspannt."
+              cta="Text kopieren"
+              onPress={() => Linking.openURL('https://www.notion.so')}
+            />
+          </Section>
         </View>
       </ScrollView>
     </View>
@@ -296,136 +236,199 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  toggleContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    padding: 10
+  scrollContent: {
+    paddingBottom: 24,
   },
-  header: {
-    alignItems: 'center',
-    padding: 20,
+  hero: {
+    paddingTop: 64,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    marginBottom: 16,
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 15,
+  heroEyebrow: {
+    fontSize: 12,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: 8,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  heroTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    marginBottom: 8,
   },
-  subtitle: {
-    fontSize: 18,
+  heroSubtitle: {
+    fontSize: 16,
+    lineHeight: 22,
   },
   mainContent: {
-    padding: 16,
+    paddingHorizontal: 20,
   },
   tabletContent: {
-    maxWidth: 800,
     alignSelf: 'center',
     width: '100%',
+    maxWidth: 820,
   },
   section: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
     marginBottom: 16,
-    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  sectionHeader: {
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#007AFF',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f4f4f4',
+    fontWeight: '700',
+    color: '#0F172A',
   },
-  contactInfo: {
-    padding: 16,
-  },
-  contactItem: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#333333',
-  },
-  contactItemLink: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#007AFF',
-    textDecorationLine: 'underline',
-  },
-  experienceItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f4f4f4',
-  },
-  experienceDate: {
+  sectionSubtitle: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666666',
+    color: '#64748B',
+    marginTop: 4,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 12,
+  },
+  pill: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+  },
+  pillActive: {
+    backgroundColor: '#0EA5E9',
+    borderColor: '#0EA5E9',
+  },
+  pillText: {
+    color: '#0F172A',
+    fontWeight: '600',
+  },
+  pillTextActive: {
+    color: '#FFFFFF',
+  },
+  promptText: {
+    fontSize: 16,
+    color: '#0F172A',
+    lineHeight: 22,
+  },
+  caseCard: {
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: '#F1F5F9',
+  },
+  caseTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 4,
   },
-  experienceDescription: {
-    fontSize: 16,
-    color: '#333333',
+  caseMeta: {
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 10,
   },
-  socialContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    marginVertical: 10
+  caseBody: {
+    fontSize: 15,
+    color: '#0F172A',
+    lineHeight: 21,
   },
-  socialButton: {
-    padding: 10, 
-    marginHorizontal: 5, 
-    backgroundColor: 'rgba(0,0,0,0.1)', 
-    borderRadius: 5
+  caseTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 12,
+    gap: 8,
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
+  tag: {
+    backgroundColor: '#E2E8F0',
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  tagText: {
+    fontSize: 12,
+    color: '#334155',
+    fontWeight: '600',
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  stepBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#0EA5E9',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  languageOption: {
-    padding: 10,
-    marginVertical: 5,
+  stepBadgeText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 16,
-    marginBottom: 16,
+  stepContent: {
+    flex: 1,
   },
-  buttonText: {
-    color: 'white',
+  stepTitle: {
     fontSize: 16,
-    textAlign: 'center',
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 2,
   },
-  footer: {
-    padding: 20,
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  footerText: {
+  stepText: {
     fontSize: 14,
-    color: '#666666',
+    color: '#334155',
+    lineHeight: 20,
   },
-  skillsContainer: {
-    padding: 16,
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  skillTitle: {
+  checkIcon: {
+    marginRight: 8,
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333333',
+  },
+  checkText: {
+    fontSize: 15,
+    color: '#0F172A',
+    flex: 1,
+  },
+  actionCard: {
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: '#0F172A',
+    marginBottom: 12,
+  },
+  actionTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  actionDescription: {
+    color: '#CBD5F5',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  actionCta: {
+    color: '#38BDF8',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });
