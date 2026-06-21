@@ -1,11 +1,27 @@
-# Sample Snack app
+# Rumänien entdecken
 
-Open the `App.js` file to start writing some code. You can preview the changes directly on your phone or tablet by scanning the **QR code** or use the iOS or Android emulators. When you're done, click **Save** and share the link!
+Eine sofort zugängliche Web-App mit kompakten Informationen über Rumänien: Kurzfakten, Highlights, Geschichte, Reisetipps, Quellen und ein kleiner interaktiver Reiseplaner.
 
-When you're ready to see everything that Expo provides (or if you want to use your own editor) you can **Download** your project and use it with [expo cli](https://docs.expo.dev/get-started/installation/#expo-cli)).
+## Sofort starten
 
-All projects created in Snack are publicly available, so you can easily share the link to this project via link, or embed it on a web page with the `<>` button.
+Du kannst die App direkt im Browser öffnen:
 
-If you're having problems, you can tweet to us [@expo](https://twitter.com/expo) or ask in our [forums](https://forums.expo.dev/c/expo-dev-tools/61) or [Discord](https://chat.expo.dev/).
+```bash
+npm run serve:web
+```
 
-Snack is Open Source. You can find the code on the [GitHub repo](https://github.com/expo/snack).
+Danach im Browser aufrufen:
+
+```text
+http://127.0.0.1:8080/
+```
+
+Alternativ kann `index.html` auch direkt in einem Browser geöffnet werden. Für die beste Darstellung empfiehlt sich aber ein lokaler Webserver.
+
+## Expo-App
+
+Die bestehende Expo-Konfiguration bleibt erhalten. Für native/Expo-Vorschau kann weiterhin Folgendes genutzt werden:
+
+```bash
+npm run start
+```
