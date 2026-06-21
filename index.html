@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Eine kompakte Web-App mit Fakten, Geschichte, Reisetipps und Highlights zu Rumänien."
+    />
+    <title>Rumänien entdecken</title>
+    <link rel="icon" href="assets/favicon.png" />
+    <link rel="stylesheet" href="web/styles.css" />
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <nav class="nav" aria-label="Hauptnavigation">
+        <a class="brand" href="#top" aria-label="Zur Startseite">🇷🇴 Rumänien</a>
+        <div class="nav-links">
+          <a href="#fakten">Fakten</a>
+          <a href="#highlights">Highlights</a>
+          <a href="#reiseplaner">Planer</a>
+        </div>
+      </nav>
+
+      <section class="hero-content" aria-labelledby="hero-title">
+        <p class="eyebrow">Sofort im Browser nutzbar</p>
+        <h1 id="hero-title">Rumänien entdecken</h1>
+        <p>
+          Eine schnelle, responsive Web-App mit Überblick zu Land, Kultur, Natur,
+          Geschichte und praktischen Tipps für deine nächste Reise.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#reiseplaner">Reise planen</a>
+          <a class="button secondary" href="#quellen">Weiterlesen</a>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="section" id="fakten" aria-labelledby="facts-title">
+        <div class="section-heading">
+          <p class="eyebrow">Kurz & klar</p>
+          <h2 id="facts-title">Wichtige Fakten</h2>
+        </div>
+        <div class="fact-grid" id="fact-grid"></div>
+      </section>
+
+      <section class="section split" id="highlights" aria-labelledby="highlights-title">
+        <div class="section-heading sticky-heading">
+          <p class="eyebrow">Warum hin?</p>
+          <h2 id="highlights-title">Highlights in Rumänien</h2>
+          <p>
+            Von Karpaten bis Donaudelta: Rumänien ist gleichzeitig Naturziel,
+            Kulturland und spannendes Städtereiseziel.
+          </p>
+        </div>
+        <div class="cards" id="highlight-cards"></div>
+      </section>
+
+      <section class="section timeline-section" aria-labelledby="history-title">
+        <div class="section-heading">
+          <p class="eyebrow">Geschichte</p>
+          <h2 id="history-title">Meilensteine auf einen Blick</h2>
+        </div>
+        <ol class="timeline" id="timeline"></ol>
+      </section>
+
+      <section class="section planner" id="reiseplaner" aria-labelledby="planner-title">
+        <div>
+          <p class="eyebrow">Interaktiv</p>
+          <h2 id="planner-title">Mini-Reiseplaner</h2>
+          <p>
+            Wähle aus, was dich am meisten interessiert. Die App schlägt dir
+            passende Regionen und Aktivitäten vor.
+          </p>
+        </div>
+        <form class="planner-card" id="planner-form">
+          <label for="interest">Dein Interesse</label>
+          <select id="interest" name="interest">
+            <option value="culture">Kultur & Städte</option>
+            <option value="nature">Natur & Wandern</option>
+            <option value="food">Essen & Alltag</option>
+            <option value="history">Geschichte & Architektur</option>
+          </select>
+          <button class="button primary" type="submit">Vorschlag anzeigen</button>
+          <output class="recommendation" id="recommendation" aria-live="polite"></output>
+        </form>
+      </section>
+
+      <section class="section" aria-labelledby="tips-title">
+        <div class="section-heading">
+          <p class="eyebrow">Praktisch</p>
+          <h2 id="tips-title">Reisetipps</h2>
+        </div>
+        <ul class="tips" id="tips"></ul>
+      </section>
+
+      <section class="section sources" id="quellen" aria-labelledby="sources-title">
+        <div class="section-heading">
+          <p class="eyebrow">Links</p>
+          <h2 id="sources-title">Quellen & weiter lesen</h2>
+        </div>
+        <div class="source-links" id="source-links"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Gebaut als sofort zugängliche Web-App über <code>index.html</code>.</p>
+      <a href="#top">Nach oben ↑</a>
+    </footer>
+
+    <script src="web/app.js"></script>
+  </body>
+</html>

@@ -1,431 +1,292 @@
-import React, { useState, useRef } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
-  Linking, 
-  Image, 
-  useWindowDimensions,
-  Platform,
-  Animated,
-  Modal
+import React from 'react';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  TouchableOpacity,
+  Linking,
+  StatusBar,
 } from 'react-native';
 
-// Dynamic Theme Constants
-const getThemeColors = () => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) { // Morning
-    return {
-      primary: '#87CEEB', // Light Sky Blue
-      background: '#E6F4F1', // Very Light Cyan
-      text: '#333333',
-      accent: '#4682B4' // Steel Blue
-    };
-  } else if (hour >= 12 && hour < 17) { // Afternoon
-    return {
-      primary: '#F0F8FF', // Light Sea Green
-      background: '#F0F8FF', // Alice Blue
-      text: '#333333',
-      accent: '87CEEB' // Forest Green
-    };
-  } else if (hour >= 17 && hour < 21) { // Evening
-    return {
-      primary: '#4169E1', // Royal Blue
-      background: '#F5F5F5', // White Smoke
-      text: '#333333',
-      accent: '#8A2BE2' // Blue Violet
-    };
-  } else { // Night
-    return {
-      primary: '#191970', // Midnight Blue
-      background: '#2F4F4F', // Dark Slate Gray
-      text: '#E0E0E0',
-      accent: '#00CED1' // Dark Turquoise
-    };
-  }
-};
+const facts = [
+  { label: 'Hauptstadt', value: 'Bukarest' },
+  { label: 'Einwohner', value: 'ca. 19 Mio.' },
+  { label: 'Fläche', value: '238.397 km²' },
+  { label: 'Sprache', value: 'Rumänisch' },
+  { label: 'Währung', value: 'Rumänischer Leu (RON)' },
+  { label: 'EU-Mitglied', value: 'seit 2007' },
+];
 
-// Reusable Components
-const Section = ({ title, children, style }) => (
-  <View style={[styles.section, style]}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {children}
-  </View>
-);
+const highlights = [
+  {
+    emoji: '🏰',
+    title: 'Transsilvanien',
+    text: 'Mittelalterliche Städte, Kirchenburgen, Karpatenlandschaften und Schloss Bran machen die Region weltberühmt.',
+  },
+  {
+    emoji: '🌊',
+    title: 'Donaudelta',
+    text: 'Eines der besterhaltenen Deltas Europas und UNESCO-Welterbe mit über 300 Vogelarten.',
+  },
+  {
+    emoji: '🏙️',
+    title: 'Bukarest',
+    text: 'Die Hauptstadt verbindet Belle-Époque-Architektur, breite Boulevards, Parks und ein lebendiges Kulturleben.',
+  },
+  {
+    emoji: '⛰️',
+    title: 'Karpaten',
+    text: 'Gebirge, Wälder und Wanderwege prägen einen großen Teil des Landes und bieten Lebensraum für Wildtiere.',
+  },
+];
 
-const LinkButton = ({ title, url }) => (
-  <TouchableOpacity
-    style={styles.button}
-    onPress={() => Linking.openURL(url)}
-    activeOpacity={0.7}
-  >
-    <Text style={styles.buttonText}>{title}</Text>
-  </TouchableOpacity>
-);
+const timeline = [
+  { year: '1859', text: 'Vereinigung der Fürstentümer Moldau und Walachei als Grundlage des modernen Rumäniens.' },
+  { year: '1918', text: 'Große Vereinigung: Siebenbürgen schließt sich Rumänien an.' },
+  { year: '1989', text: 'Ende der kommunistischen Diktatur und Beginn demokratischer Reformen.' },
+  { year: '2007', text: 'Rumänien wird Mitglied der Europäischen Union.' },
+];
 
-export default function App() {
-  // State Management
-  const [language, setLanguage] = useState('de');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [languageModalVisible, setLanguageModalVisible] = useState(false);
-  const scrollY = useRef(new Animated.Value(0)).current;
+const travelTips = [
+  'Probiere Sarmale, Mămăligă und Cozonac.',
+  'Nutze Züge für längere Strecken und plane in Bergregionen mehr Zeit ein.',
+  'In Kirchen und Klöstern sind respektvolle Kleidung und leises Verhalten wichtig.',
+  'Die beste Reisezeit für Städte und Natur ist oft Frühling bis Herbst.',
+];
 
-  // Translations
-  const translations = {
-    de: {
-      about: 'Über mich',
-      resume: 'Lebenslauf',
-      workSamples: 'Arbeitsproben',
-      certificates: 'Zeugnisse',
-      skills: 'Kenntnisse & Fähigkeiten',
-      languages: 'Sprachen'
-    },
-    en: {
-      about: 'About Me',
-      resume: 'Resume',
-      workSamples: 'Work Samples',
-      certificates: 'Certificates',
-      skills: 'Skills & Competencies',
-      languages: 'Languages'
-    }
-  };
+const sources = [
+  { title: 'EU-Länderprofil Rumänien', url: 'https://european-union.europa.eu/principles-countries-history/eu-countries/romania_de' },
+  { title: 'UNESCO: Donaudelta', url: 'https://whc.unesco.org/en/list/588/' },
+  { title: 'Offizielle Tourismusinfos', url: 'https://www.romaniatourism.com/' },
+];
 
-  // Dynamic Styling
-  const theme = getThemeColors();
-  const { width } = useWindowDimensions();
-  const isTablet = width > 768;
+const openUrl = (url) => Linking.openURL(url);
 
-  // Parallax Effect
-  const profileImageTransform = scrollY.interpolate({
-    inputRange: [-100, 0, 100],
-    outputRange: [1.2, 1, 0.8],
-    extrapolate: 'clamp'
-  });
-
-  // Social Media & Additional Interactions
-  const openSocialMedia = (platform) => {
-    const urls = {
-      instagram: 'https://instagram.com/andrenalin_now',
-      blog: 'http://neusucht.blog'
-    };
-    Linking.openURL(urls[platform]);
-  };
-
+function Section({ title, children }) {
   return (
-    <View style={[
-      styles.container, 
-      { 
-        backgroundColor: isDarkMode ? '#121212' : theme.background 
-      }
-    ]}>
-      {/* Language Selection Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={languageModalVisible}
-        onRequestClose={() => setLanguageModalVisible(false)}
-      >
-        <View style={styles.modalView}>
-          <TouchableOpacity 
-            style={styles.languageOption}
-            onPress={() => {
-              setLanguage('de');
-              setLanguageModalVisible(false);
-            }}
-          >
-            <Text>🇩🇪 Deutsch</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.languageOption}
-            onPress={() => {
-              setLanguage('en');
-              setLanguageModalVisible(false);
-            }}
-          >
-            <Text>🇬🇧 English</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
-
-      <ScrollView
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      >
-        {/* Toggle Buttons */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity onPress={() => setLanguageModalVisible(true)}>
-            <Text>{language === 'de' ? 'DE' : 'ENG'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsDarkMode(!isDarkMode)}>
-            <Text>{isDarkMode ? '☀️' : '🌙'}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Header with Parallax */}
-        <Animated.View 
-          style={[
-            styles.header, 
-            { 
-              transform: [{ scale: profileImageTransform }],
-              backgroundColor: isDarkMode ? '#333' : theme.primary 
-            }
-          ]}
-        >
-          <Animated.Image
-            source={{ uri: 'https://i.ibb.co/fVft0ZBc/IMG-3460.jpg' }}
-            style={styles.profileImage}
-            resizeMode="cover"
-          />
-          <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#000' }]}>
-            André Beinke
-          </Text>
-          <Text style={[styles.subtitle, { color: isDarkMode ? '#ddd' : '#333' }]}>
-            {translations[language].about}
-          </Text>
-        </Animated.View>
-
-        {/* Social Media Links */}
-        <View style={styles.socialContainer}>
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => openSocialMedia('instagram')}
-          >
-            <Text>📸 Instagram</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.socialButton}
-            onPress={() => openSocialMedia('blog')}
-          >
-            <Text>📝 Blog</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Rest of the Original Content */}
-        <View style={[styles.mainContent, isTablet && styles.tabletContent]}>
-          {/* About Me Section */}
-          <Section title={translations[language].about}>
-            <View style={styles.contactInfo}>
-              <Text style={styles.contactItem}>Geboren: 20. November 1987</Text>
-              <Text style={styles.contactItem}>Weserstraße 57, 12045 Berlin</Text>
-              <Text 
-                style={styles.contactItemLink}
-                onPress={() => Linking.openURL('mailto:andre.beinke@gmx.de')}
-              >
-                E-Mail: andre.beinke@gmx.de
-              </Text>
-              <Text 
-                style={styles.contactItemLink}
-                onPress={() => Linking.openURL('tel:+4915753082479')}
-              >
-                Tel: +49 157 530 824 79
-              </Text>
-            </View>
-          </Section>
-
-          {/* Resume Section */}
-          <Section title={translations[language].resume}>
-            {[
-              { date: "Dez. 2023 - heute", description: "Redakteur bei supa.stories GmbH" },
-              { date: "Okt. 2020 - März 2023", description: "Masterstudium Medien und Politische Kommunikation, Freie Universität Berlin" },
-              { date: "März - Dez. 2023", description: "Freier Journalist bei Märkische Allgemeine Zeitung & Berliner Zeitung" },
-              { date: "Sept. 2022 - Feb. 2023", description: "Social Media-Redakteur bei ZDF Digital GmbH" },
-               { date: "März 2021 - Sept. 2022", description: "Redaktioneller Mitarbeiter bei dpa" },
-            { date: "Sept. 2019 - Sept. 2020", description: "Castingredakteur bei Story House Production GmbH" },
-  
-            ].map((experience, index) => (
-              <View key={index} style={styles.experienceItem}>
-                <Text style={styles.experienceDate}>{experience.date}</Text>
-                <Text style={styles.experienceDescription}>{experience.description}</Text>
-              </View>
-            ))}
-          </Section>
-
-            {/* Work Samples */}
-        <Section title="Arbeitsproben">
-          {[
-            { title: "Rassehunde-Ausstellung Bericht", url: "https://www.zeit.de/news/2021-10/16/rostocker-rassehunde-ausstellung-mit-melderekord" },
-            { title: "Olivia Jones Porträt", url: "https://www.t-online.de/unterhaltung/stars/id_91181584/dragqueen-olivia-jones-wuenscht-sich-mehr-sinnfluencer-.html" },
-            { title: "Umwelt Crime: Fischsterben in der Oder", url: "https://www.zdf.de/nachrichten/panorama/oder-fischsterben-fluss-umweltkatastrophe-100.html" }
-          ].map((link, index) => (
-            <LinkButton 
-              key={index} 
-              title={link.title} 
-              url={link.url} 
-            />
-          ))}
-        </Section>
-
-          {/* Skills Section */}
-          <Section title={translations[language].skills}>
-            <View style={styles.skillsContainer}>
-              <Text style={styles.skillTitle}>{translations[language].languages}</Text>
-              {[
-                "Deutsch: Muttersprache",
-                "Englisch: Fließend",
-                "Französisch: Grundkenntnisse",
-                "Arabisch: Grundkenntnisse (مرحبًا!)"
-              ].map((language, index) => (
-                <Text key={index} style={styles.contactItem}>{language}</Text>
-              ))}
-            </View>
-          </Section>
-           {/* Certificates */}
-        <Section title="Zeugnisse">
-          <LinkButton
-            title="Download (PDF)"
-            url="https://drive.google.com/file/d/19tSJ4LejAU3hpPsC4kZxE0KN3xW7NqwI/view?usp=sharing"
-          />
-        </Section>
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 André Beinke</Text>
-        </View>
-      </ScrollView>
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
     </View>
   );
 }
 
+export default function App() {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1589652717521-10c0d092dea9?auto=format&fit=crop&w=1200&q=80' }}
+          style={styles.hero}
+          imageStyle={styles.heroImage}
+        >
+          <View style={styles.heroOverlay}>
+            <Text style={styles.flag}>🇷🇴</Text>
+            <Text style={styles.heroTitle}>Rumänien entdecken</Text>
+            <Text style={styles.heroSubtitle}>
+              Ein kompakter Reiseführer zu Kultur, Natur, Geschichte und praktischen Fakten.
+            </Text>
+          </View>
+        </ImageBackground>
+
+        <Section title="Kurzfakten">
+          <View style={styles.factGrid}>
+            {facts.map((fact) => (
+              <View key={fact.label} style={styles.factCard}>
+                <Text style={styles.factLabel}>{fact.label}</Text>
+                <Text style={styles.factValue}>{fact.value}</Text>
+              </View>
+            ))}
+          </View>
+        </Section>
+
+        <Section title="Was Rumänien besonders macht">
+          {highlights.map((item) => (
+            <View key={item.title} style={styles.highlightCard}>
+              <Text style={styles.highlightEmoji}>{item.emoji}</Text>
+              <View style={styles.highlightTextWrap}>
+                <Text style={styles.highlightTitle}>{item.title}</Text>
+                <Text style={styles.paragraph}>{item.text}</Text>
+              </View>
+            </View>
+          ))}
+        </Section>
+
+        <Section title="Geschichte auf einen Blick">
+          {timeline.map((event) => (
+            <View key={event.year} style={styles.timelineRow}>
+              <Text style={styles.timelineYear}>{event.year}</Text>
+              <Text style={styles.timelineText}>{event.text}</Text>
+            </View>
+          ))}
+        </Section>
+
+        <Section title="Reisetipps">
+          {travelTips.map((tip) => (
+            <Text key={tip} style={styles.tip}>• {tip}</Text>
+          ))}
+        </Section>
+
+        <Section title="Quellen & weiter lesen">
+          {sources.map((source) => (
+            <TouchableOpacity key={source.url} style={styles.linkButton} onPress={() => openUrl(source.url)}>
+              <Text style={styles.linkButtonText}>{source.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </Section>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#07111f',
+  },
   container: {
     flex: 1,
+    backgroundColor: '#eef4fb',
   },
-  toggleContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    padding: 10
+  content: {
+    paddingBottom: 28,
   },
-  header: {
-    alignItems: 'center',
-    padding: 20,
+  hero: {
+    minHeight: 340,
+    justifyContent: 'flex-end',
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 15,
+  heroImage: {
+    opacity: 0.9,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  heroOverlay: {
+    backgroundColor: 'rgba(7, 17, 31, 0.62)',
+    padding: 24,
+    paddingTop: 70,
   },
-  subtitle: {
-    fontSize: 18,
+  flag: {
+    fontSize: 54,
+    marginBottom: 8,
   },
-  mainContent: {
-    padding: 16,
+  heroTitle: {
+    color: '#ffffff',
+    fontSize: 36,
+    fontWeight: '800',
+    marginBottom: 10,
   },
-  tabletContent: {
-    maxWidth: 800,
-    alignSelf: 'center',
-    width: '100%',
+  heroSubtitle: {
+    color: '#e6eef8',
+    fontSize: 17,
+    lineHeight: 25,
   },
   section: {
-    backgroundColor: 'white',
-    marginBottom: 16,
-    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 22,
+    marginHorizontal: 16,
+    marginTop: 18,
+    padding: 18,
+    shadowColor: '#123',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 3,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#007AFF',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f4f4f4',
+    color: '#123c69',
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 14,
   },
-  contactInfo: {
-    padding: 16,
+  factGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
-  contactItem: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#333333',
+  factCard: {
+    backgroundColor: '#f1f6ff',
+    borderRadius: 16,
+    padding: 14,
+    width: '48%',
   },
-  contactItemLink: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#007AFF',
-    textDecorationLine: 'underline',
-  },
-  experienceItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f4f4f4',
-  },
-  experienceDate: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666666',
+  factLabel: {
+    color: '#5d6f86',
+    fontSize: 13,
     marginBottom: 4,
   },
-  experienceDescription: {
+  factValue: {
+    color: '#0b2545',
     fontSize: 16,
-    color: '#333333',
+    fontWeight: '700',
   },
-  socialContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    marginVertical: 10
+  highlightCard: {
+    flexDirection: 'row',
+    backgroundColor: '#fbfcff',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e5edf7',
   },
-  socialButton: {
-    padding: 10, 
-    marginHorizontal: 5, 
-    backgroundColor: 'rgba(0,0,0,0.1)', 
-    borderRadius: 5
+  highlightEmoji: {
+    fontSize: 32,
+    marginRight: 12,
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
+  highlightTextWrap: {
+    flex: 1,
   },
-  languageOption: {
-    padding: 10,
-    marginVertical: 5,
+  highlightTitle: {
+    color: '#0b2545',
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 4,
   },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 16,
-    marginBottom: 16,
+  paragraph: {
+    color: '#40566d',
+    fontSize: 15,
+    lineHeight: 22,
   },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
+  timelineRow: {
+    flexDirection: 'row',
+    marginBottom: 14,
+  },
+  timelineYear: {
+    color: '#ffcc29',
+    backgroundColor: '#123c69',
+    borderRadius: 10,
+    fontSize: 15,
+    fontWeight: '800',
+    minWidth: 62,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     textAlign: 'center',
+    overflow: 'hidden',
+    marginRight: 12,
   },
-  footer: {
-    padding: 20,
-    alignItems: 'center',
-    backgroundColor: 'white',
+  timelineText: {
+    flex: 1,
+    color: '#334e68',
+    fontSize: 15,
+    lineHeight: 22,
   },
-  footerText: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  skillsContainer: {
-    padding: 16,
-  },
-  skillTitle: {
+  tip: {
+    color: '#334e68',
     fontSize: 16,
-    fontWeight: 'bold',
+    lineHeight: 25,
     marginBottom: 8,
-    color: '#333333',
+  },
+  linkButton: {
+    backgroundColor: '#002b7f',
+    borderRadius: 14,
+    padding: 15,
+    marginBottom: 10,
+  },
+  linkButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
